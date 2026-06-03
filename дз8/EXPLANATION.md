@@ -1,0 +1,628 @@
+# Пояснення тестування на Python: unittest, mock та patch
+
+Цей проект демонструє п'ять основних методів тестування в Python з використанням `unittest`, `mock` та `patch`.
+
+---
+
+## 📋 Зміст
+
+1. [Завдання 1: Функції для роботи з рядками](#завдання-1-функції-для-роботи-з-рядками)
+2. [Завдання 2: Клас BookShelf](#завдання-2-клас-bookshelf)
+3. [Завдання 3: Тестування з patch](#завдання-3-тестування-з-patch)
+4. [Завдання 4: Mock-об'єкти](#завдання-4-mock-об'єкти)
+5. [Завдання 5: side_effect для обробки помилок](#завдання-5-side_effect-для-обробки-помилок)
+
+---
+
+## Завдання 1: Функції для роботи з рядками
+
+### Код функцій
+```python
+def is_empty(text):
+    return len(text.strip()) == 0
+
+def count_words(text):
+    return len(text.split())
+
+def capitalize_first_letter(text):
+    return ' '.join(word.capitalize() for word in text.split())
+
+def longest_word(word_list):
+    if not word_list:
+        return ""
+    return max(word_list, key=len)
+```
+
+### Пояснення функцій
+
+| Функція | Описання | Приклад |
+|---------|----------|---------|
+| `is_empty()` | Перевіряє, чи рядок порожній або складається з пробілів | `is_empty("  ")` → `True` |
+| `count_words()` | Підраховує кількість слів у рядку | `count_words("Hello World")` → `2` |
+| `capitalize_first_letter()` | Капіталізує першу літеру кожного слова | `capitalize_first_letter("hello world")` → `"Hello World"` |
+| `longest_word()` | Знаходить найдовше слово | `longest_word(["hi", "hello"])` → `"hello"` |
+
+### Основні Assert методи
+
+```python
+# assertEqual - перевірка на рівність
+self.assertEqual(count_words("Hello"), 1)
+
+# assertTrue/assertFalse - перевірка логічного значення
+self.assertTrue(is_empty("   "))
+self.assertFalse(is_empty("text"))
+
+# assertIn - перевірка наявності в колекції
+self.assertIn("hello", ["hello", "world"])
+
+# assertRaises - перевірка виключень
+with self.assertRaises(ValueError):
+    some_function()
+
+# assertNotIn - перевірка відсутності в колекції
+self.assertNotIn("missing", ["a", "b", "c"])
+```
+
+### Тести для is_empty()
+
+```python
+def test_is_empty_with_empty_string(self):
+    """Тест перевірки пустого рядка."""
+    self.assertTrue(is_empty(""))
+
+def test_is_empty_with_spaces(self):
+    """Тест перевірки рядка з тільки пробілами."""
+    self.assertTrue(is_empty("   "))
+
+def test_is_empty_with_text(self):
+    """Тест перевірки непустого рядка."""
+    self.assertFalse(is_empty("Hello"))
+```
+
+**Пояснення:**
+- `assertTrue()` - перевіряє, чи результат = `True`
+- `assertFalse()` - перевіряє, чи результат = `False`
+- Тестуємо граничні випадки: пустий рядок, пробіли, текст
+
+### Тести для count_words()
+
+```python
+def test_count_words_single_word(self):
+    self.assertEqual(count_words("Hello"), 1)
+
+def test_count_words_multiple_words(self):
+    self.assertEqual(count_words("Hello World Python"), 3)
+
+def test_count_words_with_multiple_spaces(self):
+    self.assertEqual(count_words("Hello  World   Python"), 3)
+```
+
+**Пояснення:**
+- `assertEqual(a, b)` - перевіряє, чи `a == b`
+- Тестуємо різні варіанти розділення слів (один пробіл, кілька пробілів, табуляції)
+
+### Тести для capitalize_first_letter()
+
+```python
+def test_capitalize_first_letter_multiple_words(self):
+    self.assertEqual(
+        capitalize_first_letter("hello world python"),
+        "Hello World Python"
+    )
+
+def test_capitalize_first_letter_mixed_case(self):
+    self.assertEqual(
+        capitalize_first_letter("hELLO wORLD"),
+        "Hello World"
+    )
+```
+
+**Пояснення:**
+- Перевіряємо конвертацію різних регістрів
+- Використовуємо `assertEqual()` для перевірки точних результатів
+
+### Тести для longest_word()
+
+```python
+def test_longest_word_empty_list(self):
+    self.assertEqual(longest_word([]), "")
+
+def test_longest_word_multiple_words(self):
+    self.assertEqual(longest_word(["hi", "hello", "world"]), "hello")
+```
+
+**Пояснення:**
+- Тестуємо граничний випадок (порожній список)
+- Використовуємо `max(..., key=len)` для пошуку найдовшого слова
+
+---
+
+## Завдання 2: Клас BookShelf
+
+### Код класу
+```python
+class BookShelf:
+    def __init__(self, books=None):
+        self.books = books if books is not None else []
+    
+    def add_book(self, book):
+        self.books.append(book)
+    
+    def remove_book(self, book):
+        if book not in self.books:
+            raise ValueError(f"Книга '{book}' не знайдена")
+        self.books.remove(book)
+    
+    def has_book(self, book):
+        return book in self.books
+    
+    def count_books(self):
+        return len(self.books)
+```
+
+### Метод setUp() - підготовка тестів
+
+```python
+def setUp(self):
+    """Підготовка тестових даних перед кожним тестом."""
+    self.initial_books = ["Python 101", "Web Development", "Data Science"]
+    self.shelf = BookShelf(self.initial_books.copy())
+```
+
+**Важливо:**
+- `setUp()` виконується перед **кожним** тестом
+- Гарантує, що кожен тест починається з чистого стану
+- Використовуємо `.copy()` щоб уникнути змін вихідного списку
+
+### Тести для методів класу
+
+#### test_add_book()
+```python
+def test_add_book(self):
+    """Тест додавання книги."""
+    self.shelf.add_book("New Book")
+    self.assertIn("New Book", self.shelf.books)
+    self.assertEqual(self.shelf.count_books(), 4)
+```
+
+**Перевіряємо:**
+- `assertIn()` - книга присутня в списку
+- Кількість книг збільшилася на 1
+
+#### test_remove_book_not_exists()
+```python
+def test_remove_book_not_exists(self):
+    """Тест видалення неіснуючої книги."""
+    with self.assertRaises(ValueError):
+        self.shelf.remove_book("Non-existent Book")
+```
+
+**Пояснення:**
+- `assertRaises(ValueError)` - перевіряємо, що викидається виключення
+- Важливо тестувати обробку помилок
+
+#### test_has_book_after_remove()
+```python
+def test_has_book_after_remove(self):
+    """Тест перевірки книги після видалення."""
+    self.shelf.remove_book("Python 101")
+    self.assertFalse(self.shelf.has_book("Python 101"))
+```
+
+**Перевіряємо:**
+- `assertFalse()` - книга більше не присутня
+
+---
+
+## Завдання 3: Тестування з patch
+
+### Що таке patch?
+
+**patch** замінює реальну функцію на mock-функцію для тестування. Це дозволяє нам контролювати результати зовнішніх функцій без обращення до них насправді.
+
+### Структура коду
+
+```python
+# Реальна функція отримання курсу (в реальному коді це запит до API)
+def get_exchange_rate():
+    return 1.0
+
+# Функція, яка використовує зовнішню функцію
+def calculate_order_cost(items, currency_rate=None):
+    if currency_rate is None:
+        currency_rate = get_exchange_rate()  # ← Ця функція замінюється
+    
+    total = sum(price for name, price in items)
+    return total * currency_rate
+```
+
+### Тестування з patch
+
+#### Базовий приклад
+```python
+def test_calculate_order_cost_with_patch_rate_2(self):
+    """Тест з patch: курс = 2.0"""
+    items = [("Book", 10), ("Pen", 5)]
+    
+    # Замінюємо get_exchange_rate на функцію, яка повертає 2.0
+    with patch('main.get_exchange_rate', return_value=2.0):
+        cost = calculate_order_cost(items)
+        self.assertEqual(cost, 30.0)  # (10 + 5) * 2
+```
+
+**Пояснення:**
+1. `patch('main.get_exchange_rate', return_value=2.0)` - замінюємо функцію
+2. `return_value=2.0` - функція завжди повертає 2.0
+3. У контексті `with` функція буде замінена
+4. Після `with` блока функція повертається до оригіналу
+
+#### Кілька різних значень
+```python
+def test_calculate_order_cost_multiple_patch_calls(self):
+    """Тест декількох викликів з patch"""
+    items = [("Item", 100)]
+    test_rates = [1.0, 2.0, 0.5, 1.5]
+    expected_costs = [100.0, 200.0, 50.0, 150.0]
+    
+    for rate, expected_cost in zip(test_rates, expected_costs):
+        with patch('main.get_exchange_rate', return_value=rate):
+            cost = calculate_order_cost(items)
+            self.assertEqual(cost, expected_cost)
+```
+
+**Пояснення:**
+- Тестуємо функцію з кількома різними курсами
+- Кожна ітерація отримує нову заміну
+
+### Важні моменти patch
+
+```python
+# ✅ Правильно - замінюємо в модулі, де функція використовується
+with patch('main.get_exchange_rate', return_value=2.0):
+    ...
+
+# ❌ Неправильно - не замінимо правильний об'єкт
+with patch('external_module.get_exchange_rate', return_value=2.0):
+    ...  # Якщо import був з 'main'
+```
+
+---
+
+## Завдання 4: Mock-об'єкти
+
+### Що таке mock?
+
+**Mock** - це підроблений об'єкт, який імітує поведінку реального об'єкта. Він дозволяє:
+- Перевіряти, що методи були викликані
+- Відслідковувати аргументи викликів
+- Встановлювати повертаємі значення
+
+### Структура коду
+
+```python
+class ReportSaver:
+    """Сервіс для збереження звітів"""
+    def save(self, report_data):
+        # У реальному коді збереження в БД
+        pass
+
+def create_report(data, saver):
+    """Створює звіт і передає його сервісу збереження"""
+    report = {
+        "title": data.get("title", "Report"),
+        "content": data.get("content", ""),
+    }
+    saver.save(report)  # ← Цей метод ми хочемо тестувати
+```
+
+### Создання mock-об'єкта
+
+```python
+from unittest.mock import Mock
+
+mock_saver = Mock()
+```
+
+**Що може робити mock?**
+```python
+# Викликати методи
+mock_saver.save({"title": "Report"})
+
+# Отримати інформацію про виклики
+mock_saver.save.called           # True/False
+mock_saver.save.call_count       # Кількість викликів
+mock_saver.save.call_args        # Аргументи останнього виклику
+```
+
+### Тести з mock
+
+#### Перевірка, що метод викликаний один раз
+```python
+def test_create_report_calls_save_once(self):
+    """Тест перевірки, що save() викликається один раз."""
+    mock_saver = Mock()
+    report_data = {"title": "Sales Report", "content": "Q1 Results"}
+    
+    create_report(report_data, mock_saver)
+    
+    # Перевіряємо, що save() був викликаний один раз
+    mock_saver.save.assert_called_once()
+```
+
+**assert_called_once() методи:**
+```python
+mock.method.assert_called_once()           # Викликано один раз
+mock.method.assert_called_once_with(arg1)  # Викликано один раз з аргументом
+mock.method.assert_called()                # Викликано хоча б один раз
+mock.method.assert_not_called()            # Не викликано
+```
+
+#### Перевірка аргументів виклику
+```python
+def test_create_report_calls_save_with_correct_data(self):
+    """Тест перевірки правильних даних при виклику save()."""
+    mock_saver = Mock()
+    report_data = {"title": "Monthly Report", "content": "Performance data"}
+    
+    create_report(report_data, mock_saver)
+    
+    # Отримуємо аргументи виклику
+    called_report = mock_saver.save.call_args[0][0]
+    
+    self.assertEqual(called_report["title"], "Monthly Report")
+    self.assertEqual(called_report["content"], "Performance data")
+```
+
+**Структура call_args:**
+```python
+mock.save.call_args           # Останній виклик
+mock.save.call_args[0]        # Позиційні аргументи (tuple)
+mock.save.call_args[0][0]     # Перший позиційний аргумент
+mock.save.call_args[1]        # Іменовані аргументи (dict)
+mock.save.call_count          # Кількість викликів
+```
+
+#### Перевірка декількох викликів
+```python
+def test_create_report_multiple_calls_different_data(self):
+    """Тест кількох викликів create_report з різними даними."""
+    mock_saver = Mock()
+    
+    report1 = {"title": "Report 1"}
+    report2 = {"title": "Report 2"}
+    
+    create_report(report1, mock_saver)
+    create_report(report2, mock_saver)
+    
+    # Перевіряємо, що save() був викликаний двічі
+    self.assertEqual(mock_saver.save.call_count, 2)
+```
+
+---
+
+## Завдання 5: side_effect для обробки помилок
+
+### Що таке side_effect?
+
+**side_effect** дозволяє:
+- Викидати виключення замість повернення значення
+- Повертати різні значення для послідовних викликів
+- Викликати довільну функцію
+
+### Структура коду
+
+```python
+def get_weather_data():
+    """Отримує дані про погоду (може викинути помилку)"""
+    raise Exception("Unable to fetch weather data")
+
+def get_weather_info():
+    """Отримує інформацію про погоду з обробкою помилок"""
+    try:
+        return get_weather_data()
+    except Exception:
+        return "weather unavailable"  # Запасне значення
+```
+
+### Тестування з side_effect
+
+#### side_effect для викидання виключень
+```python
+def test_weather_info_exception_returns_unavailable(self):
+    """Тест обробки помилки - повертає запасне значення."""
+    with patch('main.get_weather_data', 
+               side_effect=Exception("API Error")):
+        result = get_weather_info()
+        self.assertEqual(result, "weather unavailable")
+```
+
+**Пояснення:**
+- `side_effect=Exception("API Error")` - функція викидає виключення
+- `get_weather_info()` ловить виключення і повертає запасне значення
+- Перевіряємо, що запасне значення повернулося
+
+#### Тестування різних типів помилок
+```python
+def test_weather_info_multiple_different_exceptions(self):
+    """Тест обробки різних типів помилок."""
+    exceptions = [
+        Exception("Generic error"),
+        ConnectionError("Network error"),
+        TimeoutError("Timeout"),
+        RuntimeError("Runtime error")
+    ]
+    
+    for exc in exceptions:
+        with patch('main.get_weather_data', side_effect=exc):
+            result = get_weather_info()
+            self.assertEqual(result, "weather unavailable")
+```
+
+**Перевіряємо:**
+- Функція коректно обробляє різні типи помилок
+- Завжди повертає одне й те саме запасне значення
+
+#### side_effect з послідовністю значень
+```python
+def test_weather_info_side_effect_sequence(self):
+    """Тест sequence side_effect: успіх потім помилка."""
+    with patch('main.get_weather_data', 
+               side_effect=["Rainy, 15°C", Exception("Error")]):
+        # Перший виклик - успіх
+        result1 = get_weather_info()
+        self.assertEqual(result1, "Rainy, 15°C")
+        
+        # Другий виклик - помилка
+        result2 = get_weather_info()
+        self.assertEqual(result2, "weather unavailable")
+```
+
+**Пояснення:**
+- Передаємо список послідовностей для side_effect
+- Першого разу повертає "Rainy, 15°C"
+- Другого разу викидає Exception
+
+### Варіанти side_effect
+
+```python
+# Повернути значення
+side_effect=42
+
+# Викинути виключення
+side_effect=Exception("Error")
+
+# Послідовність значень (чергуються)
+side_effect=[1, 2, 3, Exception("Error")]
+
+# Функція, яка визначає поведінку
+side_effect=lambda x: x * 2
+
+# Без аргумента (повертає None)
+side_effect=None
+```
+
+---
+
+## 🚀 Запуск тестів
+
+### Запуск усіх тестів
+```bash
+python -m pytest test_main.py -v
+# або
+python test_main.py
+```
+
+### Запуск конкретного тесту
+```bash
+python -m pytest test_main.py::TestStringFunctions::test_is_empty_with_empty_string -v
+```
+
+### Запуск тестів з покриттям
+```bash
+pip install pytest-cov
+python -m pytest test_main.py --cov=main --cov-report=html
+```
+
+### Вивід:
+```
+test_is_empty_with_empty_string (__main__.TestStringFunctions) ... ok
+test_is_empty_with_spaces (__main__.TestStringFunctions) ... ok
+test_is_empty_with_text (__main__.TestStringFunctions) ... ok
+...
+Ran 50 tests in 0.123s
+OK
+```
+
+---
+
+## 📚 Ключові концепції
+
+### 1. unittest - базовий фреймворк для тестування
+- `TestCase` - базовий клас для тестів
+- `setUp()` - виконується перед кожним тестом
+- `tearDown()` - виконується після кожного тесту
+- `assert*()` методи - перевірка результатів
+
+### 2. mock - для підробіння об'єктів
+- `Mock()` - створює підроблений об'єкт
+- `assert_called_once()` - перевірка викликів
+- `call_args` - отримання аргументів
+- `call_count` - кількість викликів
+
+### 3. patch - для заміни функцій/методів
+- `@patch()` - декоратор
+- `with patch():` - контекстний менеджер
+- `return_value` - встановити повертаєме значення
+- `side_effect` - імітувати помилки або послідовність
+
+### 4. side_effect - для контролю поведінки
+- Викидати виключення
+- Повертати послідовність значень
+- Викликати довільну функцію
+
+---
+
+## 💡 Best Practices
+
+1. **Один тест - один аспект функціональності**
+   ```python
+   # ✅ Добре
+   def test_add_book(self):
+       self.shelf.add_book("Book")
+       self.assertIn("Book", self.shelf.books)
+   
+   # ❌ Погано (тестує кілька речей)
+   def test_add_and_remove(self):
+       self.shelf.add_book("Book")
+       self.shelf.remove_book("Book")
+   ```
+
+2. **Використовувати setUp() для підготовки**
+   ```python
+   def setUp(self):
+       self.shelf = BookShelf()
+   ```
+
+3. **Тестувати граничні випадки (edge cases)**
+   ```python
+   test_empty_list()
+   test_single_item()
+   test_large_dataset()
+   ```
+
+4. **Давати зрозумілі імена тестам**
+   ```python
+   def test_remove_book_not_exists_raises_value_error():
+       pass
+   ```
+
+5. **Тестувати обробку помилок**
+   ```python
+   def test_invalid_input_raises_exception(self):
+       with self.assertRaises(ValueError):
+           some_function(invalid_arg)
+   ```
+
+---
+
+## 📊 Структура проекту
+
+```
+дз8/
+├── main.py              # Основний код
+├── test_main.py         # Тести
+├── EXPLANATION.md       # Цей файл з поясненнями
+└── README.md           # Інструкції з запуску
+```
+
+---
+
+## 📖 Додаткові ресурси
+
+- [unittest документація](https://docs.python.org/3/library/unittest.html)
+- [unittest.mock документація](https://docs.python.org/3/library/unittest.mock.html)
+- [Python testing best practices](https://docs.pytest.org/en/stable/goodpractices.html)
+
+---
+
+**Усі завдання реалізовані з докладними поясненнями та прикладами!**

@@ -1,0 +1,20 @@
+[
+    {
+        "title": "Python Basics",
+        "teacher": "Koval",
+        "students_count": 3,
+        "active": true
+    },
+    {
+        "title": "Data Analysis",
+        "teacher": "Petrenko",
+        "students_count": 2,
+        "active": true
+    },
+    {
+        "title": "Web Scraping",
+        "teacher": "Ivanenko",
+        "students_count": 4,
+        "active": false
+    }
+]
