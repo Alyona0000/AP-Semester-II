@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blue Stock — Склад</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(circle at top left, #8b7be8 0%, transparent 35%),
+        linear-gradient(180deg, #625693, #2b2845 55%, #191827);
+    color: #f4f1ff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.wrapper {
+    width: min(1180px, 94%);
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+.hero {
+    min-height: 92vh;
+    padding: 40px;
+    border-radius: 44px;
+    background:
+        linear-gradient(135deg, rgba(132,118,219,.92), rgba(82,75,142,.88)),
+        url("https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=80");
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 35px 80px rgba(0,0,0,.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,.35), transparent 20%),
+        radial-gradient(circle at 20% 75%, rgba(214,199,255,.45), transparent 25%);
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 48px;
+}
+
+.search-box {
+    flex: 1;
+    height: 66px;
+    border-radius: 34px;
+    background: rgba(219, 211, 255, .35);
+    border: 2px solid rgba(255,255,255,.55);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    box-shadow: 8px 12px 0 rgba(28,24,55,.35);
+}
+
+.search-box span {
+    font-size: 27px;
+    margin-right: 15px;
+}
+
+.search-box input {
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 19px;
+    width: 100%;
+    font-weight: 700;
+}
+
+.search-box input::placeholder {
+    color: #eee9ff;
+}
+
+.logo-box {
+    width: 82px;
+    height: 66px;
+    border-radius: 24px;
+    background: rgba(205,196,255,.48);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 31px;
+    box-shadow: 8px 12px 0 rgba(28,24,55,.35);
+}
+
+.title-grid {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 38px;
+    align-items: center;
+}
+
+.main-title .small {
+    letter-spacing: 9px;
+    color: #ded7ff;
+    font-size: 15px;
+}
+
+.main-title h1 {
+    font-size: clamp(66px, 12vw, 148px);
+    line-height: .78;
+    text-transform: uppercase;
+    text-shadow: 0 12px 0 rgba(53,45,104,.45);
+}
+
+.main-title h1 span {
+    display: block;
+    font-style: italic;
+    font-size: .42em;
+    text-transform: none;
+    color: #f7f3ff;
+    margin-left: 105px;
+}
+
+.info-card {
+    padding: 34px;
+    border-radius: 34px;
+    background: rgba(43, 37, 91, .86);
+    border: 2px solid rgba(255,255,255,.25);
+    box-shadow: 14px 18px 0 rgba(28,24,55,.35);
+}
+
+.info-card h2 {
+    font-size: 31px;
+    margin-bottom: 16px;
+}
+
+.info-card p {
+    color: #eeeaff;
+    line-height: 1.55;
+    font-size: 17px;
+}
+
+.author {
+    margin-top: 28px;
+    padding: 25px;
+    border-radius: 32px;
+    background: rgba(239,235,255,.28);
+    border: 2px solid rgba(255,255,255,.35);
+}
+
+.author h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.author p {
+    color: #f6f2ff;
+    line-height: 1.5;
+}
+
+.hero-buttons {
+    margin-top: 30px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 16px 36px;
+    border-radius: 30px;
+    border: none;
+    background: #eeeaff;
+    color: #413772;
+    font-weight: 900;
+    font-size: 17px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 8px 0 rgba(45,39,84,.45);
+    transition: .2s;
+}
+
+.btn:hover {
+    transform: translateY(-4px);
+}
+
+.btn.dark {
+    background: #40376f;
+    color: white;
+}
+
+.stats {
+    margin-top: 55px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+}
+
+.stat {
+    min-height: 120px;
+    padding: 18px;
+    border-radius: 26px;
+    background: rgba(235,230,255,.28);
+    border: 2px solid rgba(255,255,255,.35);
+    text-align: center;
+}
+
+.stat h2 {
+    font-size: 37px;
+}
+
+.stat p {
+    margin-top: 8px;
+    color: #f0ebff;
+}
+
+.dashboard {
+    margin-top: 45px;
+    padding: 35px;
+    border-radius: 44px;
+    background: rgba(150, 141, 213, .88);
+    box-shadow: 0 28px 70px rgba(0,0,0,.35);
+    border: 2px solid rgba(255,255,255,.28);
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+.tabs button {
+    padding: 15px 26px;
+    border-radius: 20px;
+    border: none;
+    background: #ebe6ff;
+    color: #473c7d;
+    font-size: 17px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 7px 0 rgba(53,45,104,.45);
+}
+
+.tabs button.active {
+    background: #3f376d;
+    color: white;
+}
+
+.panel {
+    padding: 30px;
+    border-radius: 36px;
+    background: rgba(231,226,255,.34);
+    border: 2px solid rgba(255,255,255,.38);
+    box-shadow: inset 0 0 30px rgba(255,255,255,.08);
+}
+
+.panel h2 {
+    font-size: 34px;
+    margin-bottom: 24px;
+    color: white;
+}
+
+.form {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.form.three {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.form.two {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+input, select {
+    width: 100%;
+    padding: 17px 19px;
+    border-radius: 22px;
+    border: 2px solid rgba(255,255,255,.55);
+    background: #ddd6ff;
+    color: #18133f;
+    font-size: 16px;
+    font-weight: 800;
+    outline: none;
+}
+
+input::placeholder {
+    color: #60578e;
+}
+
+select option {
+    background: #ddd6ff;
+    color: #18133f;
+}
+
+button.action {
+    padding: 17px;
+    border-radius: 22px;
+    border: none;
+    background: #3f376d;
+    color: white;
+    font-size: 17px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 7px 0 rgba(45,39,84,.55);
+}
+
+button.action:hover {
+    transform: translateY(-3px);
+}
+
+.table-wrap {
+    overflow-x: auto;
+    border-radius: 26px;
+}
+
+table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+    background: rgba(49,42,88,.72);
+    border-radius: 26px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 18px;
+    border-bottom: 1px solid rgba(255,255,255,.16);
+    text-align: left;
+    color: white;
+}
+
+th {
+    background: rgba(35,30,65,.92);
+    color: #ded7ff;
+    font-size: 16px;
+}
+
+td button {
+    padding: 10px 18px;
+    border-radius: 16px;
+    border: none;
+    background: #eeeaff;
+    color: #3f376d;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.download {
+    color: white;
+    font-weight: 900;
+    text-decoration: none;
+    background: #3f376d;
+    padding: 10px 16px;
+    border-radius: 16px;
+    display: inline-block;
+}
+
+.message {
+    display: none;
+    margin-top: 18px;
+    padding: 16px 20px;
+    border-radius: 22px;
+    background: #3f376d;
+    color: white;
+    font-weight: 800;
+}
+
+footer {
+    text-align: center;
+    padding: 35px;
+    color: #eeeaff;
+    letter-spacing: 5px;
+}
+
+@media (max-width: 950px) {
+    .title-grid,
+    .stats,
+    .form,
+    .form.two,
+    .form.three {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        padding: 26px;
+    }
+
+    .main-title h1 {
+        font-size: 72px;
+    }
+
+    .main-title h1 span {
+        margin-left: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <section class="hero">
+        <div class="hero-content">
+
+            <div class="search-bar">
+                <div class="search-box">
+                    <span>🔎</span>
+                    <input id="heroSearch" placeholder="Пошук товару на складі..." oninput="quickSearch()">
+                </div>
+                <div class="logo-box">📦</div>
+            </div>
+
+            <div class="title-grid">
+                <div class="main-title">
+                    <div class="small">CHALLENGE UI × WEB APP</div>
+                    <h1>Blue <br>Stock <span>warehouse</span></h1>
+
+                    <div class="hero-buttons">
+                        <a href="#app" class="btn">Відкрити склад</a>
+                        <a href="#about" class="btn dark">Опис роботи</a>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="info-card" id="about">
+                        <h2>Складський веб-додаток</h2>
+                        <p>
+                            Програма реалізує роботу складу: облік товарів, категорій,
+                            партій, місць зберігання, пошук за назвою та категорією,
+                            перегляд залишків, приймання товару і відпуск зі створенням
+                            накладної у форматі MS Word.
+                        </p>
+                    </div>
+
+                    <div class="author">
+                        <h3>Роботу виконала</h3>
+                        <p><b>Рибакова Альона Олексіївна</b></p>
+                        <p>Статистика, 1 курс, 2 семестр</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <h2 id="statProducts">0</h2>
+                    <p>Товари</p>
+                </div>
+                <div class="stat">
+                    <h2 id="statCategories">0</h2>
+                    <p>Категорії</p>
+                </div>
+                <div class="stat">
+                    <h2 id="statBatches">0</h2>
+                    <p>Партії</p>
+                </div>
+                <div class="stat">
+                    <h2 id="statStorage">0</h2>
+                    <p>Місця</p>
+                </div>
+                <div class="stat">
+                    <h2 id="statInvoices">0</h2>
+                    <p>Накладні</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="dashboard" id="app">
+
+        <div class="tabs">
+            <button class="active" onclick="showTab('productsTab', this)">Товари</button>
+            <button onclick="showTab('categoriesTab', this)">Категорії</button>
+            <button onclick="showTab('batchesTab', this)">Партії</button>
+            <button onclick="showTab('storageTab', this)">Місця</button>
+            <button onclick="showTab('releaseTab', this)">Відпуск</button>
+            <button onclick="showTab('invoicesTab', this)">Накладні</button>
+        </div>
+
+        <div class="panel">
+
+            <div id="productsTab" class="tab">
+                <h2>Товари та пошук</h2>
+
+                <div class="form three">
+                    <input id="searchName" placeholder="Пошук за частиною назви">
+                    <select id="searchCategory">
+                        <option value="">Усі категорії</option>
+                    </select>
+                    <button class="action" onclick="loadProducts()">Шукати</button>
+                </div>
+
+                <div class="form">
+                    <input id="productName" placeholder="Назва товару">
+                    <select id="productCategory"></select>
+                    <input id="productUnit" placeholder="Одиниця" value="шт">
+                    <input id="productPrice" type="number" placeholder="Ціна">
+                    <button class="action" onclick="addProduct()">Додати товар</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Назва</th>
+                                <th>Категорія</th>
+                                <th>Одиниця</th>
+                                <th>Ціна</th>
+                                <th>Залишок</th>
+                                <th>Дія</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="categoriesTab" class="tab" style="display:none;">
+                <h2>Категорії</h2>
+
+                <div class="form two">
+                    <input id="categoryName" placeholder="Назва категорії">
+                    <button class="action" onclick="addCategory()">Додати категорію</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Категорія</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="batchesTab" class="tab" style="display:none;">
+                <h2>Партії товарів</h2>
+
+                <div class="form">
+                    <select id="batchProduct"></select>
+                    <select id="batchStorage"></select>
+                    <input id="batchQuantity" type="number" placeholder="Кількість">
+                    <input id="batchNumber" placeholder="Номер партії">
+                    <input id="batchSupplier" placeholder="Постачальник">
+                    <button class="action" onclick="addBatch()">Прийняти</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Партія</th>
+                                <th>Товар</th>
+                                <th>Категорія</th>
+                                <th>Кількість</th>
+                                <th>Місце</th>
+                                <th>Постачальник</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batchesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="storageTab" class="tab" style="display:none;">
+                <h2>Місця зберігання</h2>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Адреса</th>
+                                <th>Місткість</th>
+                                <th>Зайнято</th>
+                                <th>Вільно</th>
+                            </tr>
+                        </thead>
+                        <tbody id="storageTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="releaseTab" class="tab" style="display:none;">
+                <h2>Відпуск товару</h2>
+
+                <div class="form three">
+                    <select id="releaseBatch"></select>
+                    <input id="releaseQuantity" type="number" placeholder="Кількість">
+                    <input id="releaseRecipient" placeholder="Одержувач">
+                    <button class="action" onclick="releaseProduct()">Оформити</button>
+                </div>
+            </div>
+
+            <div id="invoicesTab" class="tab" style="display:none;">
+                <h2>Накладні</h2>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Номер</th>
+                                <th>Товар</th>
+                                <th>Кількість</th>
+                                <th>Одержувач</th>
+                                <th>Дата</th>
+                                <th>Word</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="message" class="message"></div>
+
+        </div>
+    </section>
+
+    <footer>
+        CREATED BY РИБАКОВА АЛЬОНА ОЛЕКСІЇВНА
+    </footer>
+
+</div>
+
+<script>
+const API = "";
+
+function showMessage(text) {
+    const box = document.getElementById("message");
+    box.textContent = text;
+    box.style.display = "block";
+
+    setTimeout(() => {
+        box.style.display = "none";
+    }, 3500);
+}
+
+function showTab(id, btn) {
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.style.display = "none";
+    });
+
+    document.querySelectorAll(".tabs button").forEach(button => {
+        button.classList.remove("active");
+    });
+
+    document.getElementById(id).style.display = "block";
+
+    if (btn) {
+        btn.classList.add("active");
+    }
+
+    if (id === "productsTab") loadProducts();
+    if (id === "categoriesTab") loadCategories();
+    if (id === "batchesTab") {
+        loadProductsForSelect();
+        loadStorageForSelect();
+        loadBatches();
+    }
+    if (id === "storageTab") loadStorage();
+    if (id === "releaseTab") loadReleaseBatches();
+    if (id === "invoicesTab") loadInvoices();
+}
+
+async function requestJSON(url, options = {}) {
+    const res = await fetch(url, options);
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+        throw new Error(data.error || "Помилка запиту");
+    }
+
+    return data;
+}
+
+async function loadStats() {
+    const data = await requestJSON(`${API}/api/stats`);
+
+    document.getElementById("statProducts").textContent = data.products;
+    document.getElementById("statCategories").textContent = data.categories;
+    document.getElementById("statBatches").textContent = data.batches;
+    document.getElementById("statStorage").textContent = data.storage;
+    document.getElementById("statInvoices").textContent = data.invoices;
+}
+
+async function loadCategories() {
+    const categories = await requestJSON(`${API}/api/categories`);
+
+    document.getElementById("categoriesTable").innerHTML = categories.map(c => `
+        <tr>
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+        </tr>
+    `).join("");
+
+    const options = categories.map(c => `
+        <option value="${c.id}">${c.name}</option>
+    `).join("");
+
+    document.getElementById("productCategory").innerHTML = options;
+
+    document.getElementById("searchCategory").innerHTML = `
+        <option value="">Усі категорії</option>
+        ${options}
+    `;
+}
+
+async function addCategory() {
+    const name = document.getElementById("categoryName").value.trim();
+
+    if (!name) {
+        showMessage("Введіть назву категорії");
+        return;
+    }
+
+    try {
+        await requestJSON(`${API}/api/categories`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name})
+        });
+
+        document.getElementById("categoryName").value = "";
+
+        showMessage("Категорію додано");
+
+        await loadCategories();
+        await loadStats();
+    } catch (err) {
+        showMessage(err.message);
+    }
+}
+
+async function loadProducts() {
+    const search = document.getElementById("searchName").value.trim();
+    const categoryId = document.getElementById("searchCategory").value;
+
+    let url = `${API}/api/products?search=${encodeURIComponent(search)}`;
+
+    if (categoryId) {
+        url += `&category_id=${categoryId}`;
+    }
+
+    try {
+        const products = await requestJSON(url);
+
+        if (products.length === 0) {
+            document.getElementById("productsTable").innerHTML = `
+                <tr>
+                    <td colspan="6">Товарів не знайдено</td>
+                </tr>
+            `;
+            return;
+        }
+
+        document.getElementById("productsTable").innerHTML = products.map(p => `
+            <tr>
+                <td>${p.name}</td>
+                <td>${p.category}</td>
+                <td>${p.unit}</td>
+                <td>${p.price}</td>
+                <td>${p.quantity}</td>
+                <td>
+                    <button onclick="showProductBatches(${p.id})">Партії</button>
+                </td>
+            </tr>
+        `).join("");
+
+    } catch (err) {
+        showMessage(err.message);
+    }
+}
+
+async function addProduct() {
+    const name = document.getElementById("productName").value.trim();
+    const category_id = Number(document.getElementById("productCategory").value);
+    const unit = document.getElementById("productUnit").value.trim() || "шт";
+    const price = Number(document.getElementById("productPrice").value || 0);
+
+    if (!name) {
+        showMessage("Введіть назву товару");
+        return;
+    }
+
+    if (!category_id) {
+        showMessage("Оберіть категорію");
+        return;
+    }
+
+    try {
+        await requestJSON(`${API}/api/products`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                name,
+                category_id,
+                unit,
+                price
+            })
+        });
+
+        document.getElementById("productName").value = "";
+        document.getElementById("productPrice").value = "";
+
+        document.getElementById("searchName").value = "";
+        document.getElementById("searchCategory").value = "";
+        document.getElementById("heroSearch").value = "";
+
+        showMessage("Товар додано в базу даних");
+
+        await loadCategories();
+        await loadProducts();
+        await loadProductsForSelect();
+        await loadStats();
+
+    } catch (err) {
+        showMessage(err.message);
+    }
+}
+
+async function loadProductsForSelect() {
+    const products = await requestJSON(`${API}/api/products`);
+
+    const select = document.getElementById("batchProduct");
+
+    if (products.length === 0) {
+        select.innerHTML = `<option value="">Спочатку додайте товар</option>`;
+        return;
+    }
+
+    select.innerHTML = products.map(p => `
+        <option value="${p.id}">${p.name} — залишок: ${p.quantity}</option>
+    `).join("");
+}
+
+async function loadStorage() {
+    const storage = await requestJSON(`${API}/api/storage`);
+
+    document.getElementById("storageTable").innerHTML = storage.map(s => `
+        <tr>
+            <td>${s.address}</td>
+            <td>${s.capacity}</td>
+            <td>${s.used}</td>
+            <td>${s.available}</td>
+        </tr>
+    `).join("");
+}
+
+async function loadStorageForSelect() {
+    const storage = await requestJSON(`${API}/api/storage`);
+
+    document.getElementById("batchStorage").innerHTML = storage.map(s => `
+        <option value="${s.id}">${s.address} — вільно: ${s.available}</option>
+    `).join("");
+}
+
+async function addBatch() {
+    const product_id = Number(document.getElementById("batchProduct").value);
+    const storage_id = Number(document.getElementById("batchStorage").value);
+    const quantity = Number(document.getElementById("batchQuantity").value);
+    const batch_number = document.getElementById("batchNumber").value.trim();
+    const supplier = document.getElementById("batchSupplier").value.trim();
+
+    if (!product_id || !storage_id || !quantity || !batch_number) {
+        showMessage("Заповніть товар, місце, кількість і номер партії");
+        return;
+    }
+
+    try {
+        await requestJSON(`${API}/api/batches`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                product_id,
+                storage_id,
+                quantity,
+                batch_number,
+                supplier
+            })
+        });
+
+        document.getElementById("batchQuantity").value = "";
+        document.getElementById("batchNumber").value = "";
+        document.getElementById("batchSupplier").value = "";
+
+        showMessage("Партію прийнято на склад");
+
+        await loadBatches();
+        await loadProducts();
+        await loadProductsForSelect();
+        await loadStorageForSelect();
+        await loadStats();
+
+    } catch (err) {
+        showMessage(err.message);
+    }
+}
+
+async function loadBatches(productId = "") {
+    let url = `${API}/api/batches`;
+
+    if (productId) {
+        url += `?product_id=${productId}`;
+    }
+
+    const batches = await requestJSON(url);
+
+    if (batches.length === 0) {
+        document.getElementById("batchesTable").innerHTML = `
+            <tr>
+                <td colspan="7">Партій не знайдено</td>
+            </tr>
+        `;
+        return;
+    }
+
+    document.getElementById("batchesTable").innerHTML = batches.map(b => `
+        <tr>
+            <td>${b.batch_number}</td>
+            <td>${b.product}</td>
+            <td>${b.category}</td>
+            <td>${b.quantity} ${b.unit}</td>
+            <td>${b.storage}</td>
+            <td>${b.supplier}</td>
+            <td>${b.date}</td>
+        </tr>
+    `).join("");
+}
+
+async function showProductBatches(productId) {
+    const btn = document.querySelectorAll(".tabs button")[2];
+
+    showTab("batchesTab", btn);
+
+    await loadProductsForSelect();
+    await loadStorageForSelect();
+    await loadBatches(productId);
+}
+
+async function loadReleaseBatches() {
+    const batches = await requestJSON(`${API}/api/batches`);
+
+    const available = batches.filter(b => b.quantity > 0);
+
+    const select = document.getElementById("releaseBatch");
+
+    if (available.length === 0) {
+        select.innerHTML = `<option value="">Немає доступних партій</option>`;
+        return;
+    }
+
+    select.innerHTML = available.map(b => `
+        <option value="${b.id}">
+            ${b.batch_number} — ${b.product}, ${b.quantity} ${b.unit}, ${b.storage}
+        </option>
+    `).join("");
+}
+
+async function releaseProduct() {
+    const batch_id = Number(document.getElementById("releaseBatch").value);
+    const quantity = Number(document.getElementById("releaseQuantity").value);
+    const recipient = document.getElementById("releaseRecipient").value.trim();
+
+    if (!batch_id || !quantity || !recipient) {
+        showMessage("Заповніть партію, кількість і одержувача");
+        return;
+    }
+
+    try {
+        const data = await requestJSON(`${API}/api/release`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                batch_id,
+                quantity,
+                recipient
+            })
+        });
+
+        document.getElementById("releaseQuantity").value = "";
+        document.getElementById("releaseRecipient").value = "";
+
+        showMessage(`Відпуск оформлено. Накладна: ${data.invoice_number}`);
+
+        await loadReleaseBatches();
+        await loadInvoices();
+        await loadProducts();
+        await loadStats();
+
+    } catch (err) {
+        showMessage(err.message);
+    }
+}
+
+async function loadInvoices() {
+    const invoices = await requestJSON(`${API}/api/invoices`);
+
+    if (invoices.length === 0) {
+        document.getElementById("invoicesTable").innerHTML = `
+            <tr>
+                <td colspan="6">Накладних ще немає</td>
+            </tr>
+        `;
+        return;
+    }
+
+    document.getElementById("invoicesTable").innerHTML = invoices.map(i => `
+        <tr>
+            <td>${i.invoice_number}</td>
+            <td>${i.product}</td>
+            <td>${i.quantity} ${i.unit}</td>
+            <td>${i.recipient}</td>
+            <td>${i.date}</td>
+            <td>
+                <a class="download" href="${API}/api/invoice/${i.id}/download">
+                    Word
+                </a>
+            </td>
+        </tr>
+    `).join("");
+}
+
+function quickSearch() {
+    const value = document.getElementById("heroSearch").value;
+
+    document.getElementById("searchName").value = value;
+
+    const productsButton = document.querySelectorAll(".tabs button")[0];
+    showTab("productsTab", productsButton);
+
+    loadProducts();
+}
+
+window.addEventListener("load", async () => {
+    try {
+        await loadCategories();
+        await loadProducts();
+        await loadStats();
+    } catch (err) {
+        showMessage("Помилка підключення до сервера. Запустіть python app.py і відкрийте http://127.0.0.1:5000");
+    }
+});
+</script>
+
+</body>
+</html>
