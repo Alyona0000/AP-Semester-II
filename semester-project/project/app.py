@@ -9,6 +9,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "warehouse.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -70,61 +71,158 @@ class Invoice(db.Model):
 
 
 def add_category_if_missing(name):
-    if not Category.query.filter_by(name=name).first():
-        db.session.add(Category(name=name))
+    category = Category.query.filter_by(name=name).first()
+
+    if not category:
+        category = Category(name=name)
+        db.session.add(category)
+        db.session.commit()
+
+    return category
 
 
 def add_storage_if_missing(building, department, shelf, capacity):
-    exists = Storage.query.filter_by(
+    storage = Storage.query.filter_by(
         building=building,
         department=department,
         shelf=shelf
     ).first()
 
-    if not exists:
-        db.session.add(Storage(
+    if not storage:
+        storage = Storage(
             building=building,
             department=department,
             shelf=shelf,
             capacity=capacity
-        ))
+        )
+        db.session.add(storage)
+        db.session.commit()
+
+    return storage
+
+
+def add_product_if_missing(name, category_name, unit, price):
+    product = Product.query.filter_by(name=name).first()
+
+    if product:
+        return product
+
+    category = Category.query.filter_by(name=category_name).first()
+
+    if not category:
+        category = add_category_if_missing(category_name)
+
+    product = Product(
+        name=name,
+        category_id=category.id,
+        unit=unit,
+        price=price
+    )
+
+    db.session.add(product)
+    db.session.commit()
+
+    return product
+
+
+def add_batch_if_missing(product_name, storage, quantity, batch_number, supplier):
+    batch = Batch.query.filter_by(batch_number=batch_number).first()
+
+    if batch:
+        return batch
+
+    product = Product.query.filter_by(name=product_name).first()
+
+    if not product:
+        return None
+
+    if storage.current_quantity + quantity <= storage.capacity:
+        batch = Batch(
+            product_id=product.id,
+            storage_id=storage.id,
+            quantity=quantity,
+            batch_number=batch_number,
+            supplier=supplier
+        )
+
+        storage.current_quantity += quantity
+
+        db.session.add(batch)
+        db.session.commit()
+
+        return batch
+
+    return None
 
 
 with app.app_context():
     db.create_all()
 
     start_categories = [
-        "Електроніка",
+        "Техніка",
         "Комп'ютерна техніка",
+        "Смартфони",
+        "Ноутбуки",
         "Побутова техніка",
+        "Ліки",
+        "Медичні товари",
         "Одяг",
         "Взуття",
-        "Харчові продукти",
-        "Меблі",
-        "Канцелярія",
-        "Будівельні матеріали",
         "Косметика",
-        "Іграшки",
-        "Медичні товари",
+        "Харчові продукти",
+        "Напої",
+        "Канцелярія",
         "Книги",
-        "Посуд",
-        "Спортивні товари"
+        "Іграшки",
+        "Меблі",
+        "Будівельні матеріали",
+        "Автотовари",
+        "Спортивні товари",
+        "Електроінструменти",
+        "Сад та город",
+        "Товари для тварин"
     ]
 
     for name in start_categories:
         add_category_if_missing(name)
 
-    db.session.commit()
+    storage_a1 = add_storage_if_missing("А", "1", "1", 500)
+    storage_a2 = add_storage_if_missing("А", "1", "2", 500)
+    storage_a3 = add_storage_if_missing("А", "2", "1", 700)
+    storage_b1 = add_storage_if_missing("Б", "1", "1", 1000)
+    storage_b2 = add_storage_if_missing("Б", "2", "3", 800)
+    storage_v1 = add_storage_if_missing("В", "1", "5", 600)
+    storage_v2 = add_storage_if_missing("В", "3", "2", 900)
 
-    add_storage_if_missing("А", "1", "1", 500)
-    add_storage_if_missing("А", "1", "2", 500)
-    add_storage_if_missing("А", "2", "1", 700)
-    add_storage_if_missing("Б", "1", "1", 1000)
-    add_storage_if_missing("Б", "2", "3", 800)
-    add_storage_if_missing("В", "1", "5", 600)
-    add_storage_if_missing("В", "3", "2", 900)
+    add_product_if_missing("Ноутбук ASUS TUF Gaming", "Ноутбуки", "шт", 42000)
+    add_product_if_missing("Монітор Samsung 27", "Техніка", "шт", 8500)
+    add_product_if_missing("iPhone 15", "Смартфони", "шт", 39999)
+    add_product_if_missing("Samsung Galaxy S24", "Смартфони", "шт", 35999)
+    add_product_if_missing("Парацетамол", "Ліки", "уп", 65)
+    add_product_if_missing("Амоксицилін", "Ліки", "уп", 145)
+    add_product_if_missing("Кава Jacobs", "Харчові продукти", "шт", 220)
+    add_product_if_missing("Чай Greenfield", "Напої", "шт", 95)
+    add_product_if_missing("Зошит 48 арк.", "Канцелярія", "шт", 35)
+    add_product_if_missing("Ручка Pilot", "Канцелярія", "шт", 25)
+    add_product_if_missing("Худі Oversize", "Одяг", "шт", 1200)
+    add_product_if_missing("Джинси Classic", "Одяг", "шт", 1800)
+    add_product_if_missing("Шампунь Elseve", "Косметика", "шт", 160)
+    add_product_if_missing("Корм для котів Whiskas", "Товари для тварин", "шт", 180)
 
-    db.session.commit()
+    add_batch_if_missing("Ноутбук ASUS TUF Gaming", storage_a1, 8, "BATCH-001", "ASUS Ukraine")
+    add_batch_if_missing("Монітор Samsung 27", storage_a2, 15, "BATCH-002", "Samsung Store")
+    add_batch_if_missing("iPhone 15", storage_a3, 10, "BATCH-003", "Apple Partner")
+    add_batch_if_missing("Samsung Galaxy S24", storage_a3, 12, "BATCH-004", "Samsung Store")
+    add_batch_if_missing("Парацетамол", storage_b1, 120, "BATCH-005", "Аптека Склад")
+    add_batch_if_missing("Амоксицилін", storage_b1, 80, "BATCH-006", "МедПостач")
+    add_batch_if_missing("Кава Jacobs", storage_b2, 60, "BATCH-007", "Food Market")
+    add_batch_if_missing("Чай Greenfield", storage_b2, 75, "BATCH-008", "Food Market")
+    add_batch_if_missing("Зошит 48 арк.", storage_v1, 200, "BATCH-009", "КанцОпт")
+    add_batch_if_missing("Ручка Pilot", storage_v1, 300, "BATCH-010", "КанцОпт")
+    add_batch_if_missing("Худі Oversize", storage_v2, 25, "BATCH-011", "Fashion Shop")
+    add_batch_if_missing("Джинси Classic", storage_v2, 20, "BATCH-012", "Fashion Shop")
+    add_batch_if_missing("Шампунь Elseve", storage_b2, 40, "BATCH-013", "Beauty Market")
+    add_batch_if_missing("Корм для котів Whiskas", storage_b2, 55, "BATCH-014", "Zoo Market")
 
 
 @app.route("/")
@@ -147,6 +245,7 @@ def api_stats():
 def api_categories():
     if request.method == "POST":
         data = request.get_json()
+
         name = data.get("name", "").strip()
 
         if not name:
@@ -156,15 +255,22 @@ def api_categories():
             return jsonify({"error": "Така категорія вже існує"}), 400
 
         category = Category(name=name)
+
         db.session.add(category)
         db.session.commit()
 
-        return jsonify({"id": category.id, "name": category.name}), 201
+        return jsonify({
+            "id": category.id,
+            "name": category.name
+        }), 201
 
     categories = Category.query.order_by(Category.name).all()
 
     return jsonify([
-        {"id": c.id, "name": c.name}
+        {
+            "id": c.id,
+            "name": c.name
+        }
         for c in categories
     ])
 
@@ -197,7 +303,10 @@ def api_products():
         db.session.add(product)
         db.session.commit()
 
-        return jsonify({"id": product.id, "name": product.name}), 201
+        return jsonify({
+            "id": product.id,
+            "name": product.name
+        }), 201
 
     search = request.args.get("search", "").strip()
     category_id = request.args.get("category_id", "").strip()
@@ -228,7 +337,11 @@ def api_products():
 
 @app.route("/api/storage")
 def api_storage():
-    storages = Storage.query.order_by(Storage.building, Storage.department, Storage.shelf).all()
+    storages = Storage.query.order_by(
+        Storage.building,
+        Storage.department,
+        Storage.shelf
+    ).all()
 
     return jsonify([
         {
@@ -287,7 +400,10 @@ def api_batches():
         db.session.add(batch)
         db.session.commit()
 
-        return jsonify({"id": batch.id, "batch_number": batch.batch_number}), 201
+        return jsonify({
+            "id": batch.id,
+            "batch_number": batch.batch_number
+        }), 201
 
     product_id = request.args.get("product_id", "").strip()
 
